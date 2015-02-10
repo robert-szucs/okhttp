@@ -1,21 +1,28 @@
 package com.squareup.okhttp.apache;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
-import com.squareup.okhttp.mockwebserver.MockWebServer;
-import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import static com.squareup.okhttp.internal.Util.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
+
 import okio.Buffer;
 import okio.GzipSink;
 import okio.Okio;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
@@ -23,10 +30,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.squareup.okhttp.internal.Util.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import com.squareup.okhttp.mockwebserver.MockResponse;
+import com.squareup.okhttp.mockwebserver.MockWebServer;
+import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
 public class OkApacheClientTest {
   private MockWebServer server;
@@ -125,6 +131,20 @@ public class OkApacheClientTest {
     RecordedRequest request = server.takeRequest();
     assertEquals(request.getHeader("Content-Type"), "application/xml");
   }
+
+  @Test public void acceptNonstandardContentTypeInHeader() throws Exception {
+	    server.enqueue(new MockResponse());
+
+	    HttpPost httpPost = new HttpPost();
+	    httpPost.setURI(server.getUrl("/").toURI());
+	    httpPost.addHeader("Content-Type", "jpg");
+	    HttpEntity entity = new ByteArrayEntity(new byte[] {'a', 'b', 0} , ContentType.parse("image/jpeg"));
+		httpPost.setEntity(entity);
+	    client.execute(httpPost);
+
+	    RecordedRequest request = server.takeRequest();
+	    assertEquals("jpg", request.getHeader("Content-Type"));
+	  }
 
   @Test public void contentType() throws Exception {
     server.enqueue(new MockResponse().setBody("<html><body><h1>Hello, World!</h1></body></html>")

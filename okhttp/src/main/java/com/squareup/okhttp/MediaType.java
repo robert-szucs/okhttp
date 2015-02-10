@@ -73,6 +73,10 @@ public final class MediaType {
     return new MediaType(string, type, subtype, charset);
   }
 
+  public static MediaType valueOf(String contentTypeHeader) {
+	    return new MediaType(contentTypeHeader, contentTypeHeader, "", null);
+	}
+
   /**
    * Returns the high-level media type, such as "text", "image", "audio",
    * "video", or "application".
@@ -120,4 +124,5 @@ public final class MediaType {
   @Override public int hashCode() {
     return mediaType.hashCode();
   }
+
 }

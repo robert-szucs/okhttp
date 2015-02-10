@@ -17,7 +17,7 @@ final class HttpEntityBody extends RequestBody {
     this.entity = entity;
 
     if (contentTypeHeader != null) {
-      mediaType = MediaType.parse(contentTypeHeader);
+        mediaType = MediaType.valueOf(contentTypeHeader);
     } else if (entity.getContentType() != null) {
       mediaType = MediaType.parse(entity.getContentType().getValue());
     } else {
